@@ -4,6 +4,17 @@
 
 ## 核心功能
 
+### API 后端说明
+
+本工具支持两种 API 后端：
+
+| 后端 | 说明 | 推荐地区 |
+|------|------|----------|
+| **openalex** (默认) | 使用 OpenAlex API 获取 arXiv 论文，国内访问更稳定 | 中国大陆 |
+| **arxiv** | 使用 arXiv 官方 API，可能被限流 | 海外 |
+
+如需切换后端，修改 `cli.py` 中的 `ArxivClient(backend="openalex")` 为 `ArxivClient(backend="arxiv")`。
+
 ### 1. 初始化命令 (`init`)
 
 **完整交互流程：**

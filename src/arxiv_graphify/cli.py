@@ -40,12 +40,20 @@ def cli(ctx, config: Optional[str]):
 )
 @click.option(
     "--max-papers", "-m",
-    default=500,
-    help="Maximum number of papers to fetch per keyword",
+    default=200,
+    help="Maximum number of papers to fetch per keyword (default: 200)",
+)
+@click.option(
+    "--page-size",
+    default=100,
+    help="Results per page for pagination (max 100, default: 100)",
 )
 @click.pass_context
-def init(ctx, keyword: str, output_dir: str, max_papers: int):
-    """Initialize a new arXiv knowledge graph project."""
+def init(ctx, keyword: str, output_dir: str, max_papers: int, page_size: int):
+    """Initialize a new arXiv knowledge graph project.
+
+    Uses Semantic Scholar API for better availability in China.
+    """
     config: Config = ctx.obj["config"]
 
     if not config.qwen_api_key:
@@ -72,11 +80,11 @@ def init(ctx, keyword: str, output_dir: str, max_papers: int):
         click.echo("Error: Failed to expand keywords.")
         sys.exit(1)
 
-    click.echo("\nSuggested arXiv keywords:")
+    click.echo("\nSuggested arXiv categories:")
     for i, item in enumerate(expanded, 1):
         click.echo(f"  {i}. {item['keyword']} - {item['description']}")
 
-    if not click.confirm("\nConfirm these keywords?"):
+    if not click.confirm("\nConfirm these categories?"):
         sys.exit(0)
 
     arxiv_keywords = [item["keyword"] for item in expanded]
@@ -102,15 +110,19 @@ def init(ctx, keyword: str, output_dir: str, max_papers: int):
         start_date = click.prompt("Start date (YYYY-MM-DD)")
         end_date = click.prompt("End date (YYYY-MM-DD)", default=end_date)
 
-    click.echo(f"\nFetching papers from {start_date} to {end_date}...")
+    click.echo(f"\nFetching papers from Semantic Scholar (arXiv mirror)...")
+    click.echo(f"  Categories: {', '.join(arxiv_keywords)}")
+    click.echo(f"  Time range: {start_date} to {end_date}")
 
     # Step 3: Search and download papers
-    arxiv_client = ArxivClient()
+    # Use OpenAlex backend for better China access
+    arxiv_client = ArxivClient(backend="openalex")
     papers = arxiv_client.search_by_keywords(
         keywords=arxiv_keywords,
         start_date=start_date,
         end_date=end_date,
         max_results_per_keyword=max_papers,
+        page_size=min(page_size, 100),
     )
 
     click.echo(f"Found {len(papers)} papers.")
@@ -136,7 +148,7 @@ def init(ctx, keyword: str, output_dir: str, max_papers: int):
 
     click.echo(f"\nInitialization complete!")
     click.echo(f"  Papers: {len(papers)}")
-    click.echo(f"  Keywords: {', '.join(arxiv_keywords)}")
+    click.echo(f"  Categories: {', '.join(arxiv_keywords)}")
     click.echo(f"  Time range: {start_date} to {end_date}")
     click.echo("\nNext step: Run 'python -m arxiv_graphify build' to build the graph.")
 
@@ -150,8 +162,8 @@ def init(ctx, keyword: str, output_dir: str, max_papers: int):
 )
 @click.option(
     "--max-papers", "-m",
-    default=200,
-    help="Maximum number of papers to fetch per keyword",
+    default=100,
+    help="Maximum number of papers to fetch per keyword (default: 100)",
 )
 @click.pass_context
 def update(ctx, output_dir: str, max_papers: int):
