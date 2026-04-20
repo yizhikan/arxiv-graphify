@@ -2,6 +2,16 @@
 
 利用大模型和 arXiv API 自动构建领域论文知识图谱的工具，基于 graphify 实现。
 
+## 更新记录
+
+### 2026-04-20
+- 添加交互式论文数量选择功能
+- `init` 和 `update` 命令移除 `--max-papers` 选项，改为交互式菜单
+- 支持选择：全部论文 / 50 篇 / 100 篇 / 200 篇 / 自定义数量
+- `arxiv_client.py` 支持 `max_results=None`（不限制数量）
+
+---
+
 ## 核心功能
 
 ### API 后端说明
@@ -180,7 +190,7 @@ python -m arxiv_graphify build
 |------|------|
 | `-c, --config PATH` | 指定配置文件路径 |
 | `-o, --output-dir PATH` | 指定输出目录（默认当前目录） |
-| `-m, --max-papers INTEGER` | 每个关键词最大抓取数（init 默认 500，update 默认 200） |
+| `-p, --page-size INTEGER` | 每页结果数（默认 100） |
 
 ---
 
