@@ -39,17 +39,12 @@ def cli(ctx, config: Optional[str]):
     help="Output directory for papers and metadata",
 )
 @click.option(
-    "--max-papers", "-m",
-    default=200,
-    help="Maximum number of papers to fetch per keyword (default: 200)",
-)
-@click.option(
     "--page-size",
     default=100,
     help="Results per page for pagination (max 100, default: 100)",
 )
 @click.pass_context
-def init(ctx, keyword: str, output_dir: str, max_papers: int, page_size: int):
+def init(ctx, keyword: str, output_dir: str, page_size: int):
     """Initialize a new arXiv knowledge graph project.
 
     Uses Semantic Scholar API for better availability in China.
@@ -110,9 +105,32 @@ def init(ctx, keyword: str, output_dir: str, max_papers: int, page_size: int):
         start_date = click.prompt("Start date (YYYY-MM-DD)")
         end_date = click.prompt("End date (YYYY-MM-DD)", default=end_date)
 
+    # Select number of papers
+    click.echo("\nSelect number of papers:")
+    click.echo("  1. All papers (no limit)")
+    click.echo("  2. 50 papers")
+    click.echo("  3. 100 papers")
+    click.echo("  4. 200 papers")
+    click.echo("  5. Custom number")
+
+    num_choice = click.prompt("Choice", type=click.Choice(["1", "2", "3", "4", "5"]), default="3")
+
+    if num_choice == "1":
+        max_papers = None
+        click.echo("\nFetching all available papers...")
+    elif num_choice == "2":
+        max_papers = 50
+    elif num_choice == "3":
+        max_papers = 100
+    elif num_choice == "4":
+        max_papers = 200
+    else:
+        max_papers = click.prompt("Enter number of papers", type=int, default=100)
+
     click.echo(f"\nFetching papers from Semantic Scholar (arXiv mirror)...")
     click.echo(f"  Categories: {', '.join(arxiv_keywords)}")
     click.echo(f"  Time range: {start_date} to {end_date}")
+    click.echo(f"  Max papers: {max_papers if max_papers else 'unlimited'}")
 
     # Step 3: Search and download papers
     # Use OpenAlex backend for better China access
@@ -160,13 +178,8 @@ def init(ctx, keyword: str, output_dir: str, max_papers: int, page_size: int):
     type=click.Path(exists=True),
     help="Output directory for papers and metadata",
 )
-@click.option(
-    "--max-papers", "-m",
-    default=100,
-    help="Maximum number of papers to fetch per keyword (default: 100)",
-)
 @click.pass_context
-def update(ctx, output_dir: str, max_papers: int):
+def update(ctx, output_dir: str):
     """Incrementally update an existing arXiv knowledge graph."""
     config: Config = ctx.obj["config"]
 
@@ -182,6 +195,29 @@ def update(ctx, output_dir: str, max_papers: int):
         sys.exit(1)
 
     click.echo(f"Updating from {meta.last_updated} to now...")
+    click.echo(f"  Current time range: {meta.start_date} to {meta.end_date}")
+
+    # Select number of papers
+    click.echo("\nSelect number of papers to fetch:")
+    click.echo("  1. All papers (no limit)")
+    click.echo("  2. 50 papers")
+    click.echo("  3. 100 papers")
+    click.echo("  4. 200 papers")
+    click.echo("  5. Custom number")
+
+    num_choice = click.prompt("Choice", type=click.Choice(["1", "2", "3", "4", "5"]), default="3")
+
+    if num_choice == "1":
+        max_papers = None
+        click.echo("\nFetching all available papers...")
+    elif num_choice == "2":
+        max_papers = 50
+    elif num_choice == "3":
+        max_papers = 100
+    elif num_choice == "4":
+        max_papers = 200
+    else:
+        max_papers = click.prompt("Enter number of papers", type=int, default=100)
 
     # Search for new papers since last update
     arxiv_client = ArxivClient()

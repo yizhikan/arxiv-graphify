@@ -255,7 +255,7 @@ class ArxivClient:
         keyword: Optional[str] = None,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
-        max_results: int = 500,
+        max_results: Optional[int] = 500,
         page_size: int = 100,
     ) -> List[Dict]:
         """
@@ -266,24 +266,29 @@ class ArxivClient:
             keyword: Optional keyword to search in title/abstract
             start_date: Start date in YYYY-MM-DD format
             end_date: End date in YYYY-MM-DD format
-            max_results: Total maximum results to fetch
+            max_results: Total maximum results to fetch (None for unlimited)
             page_size: Results per page
-
-        Returns:
-            List of paper dicts with metadata
         """
         all_papers = []
         current_page = 0
-        pages_needed = (max_results + page_size - 1) // page_size
+        max_pages = 100  # Safety limit
 
-        print(f"    Fetching up to {max_results} papers ({page_size} per page, ~{pages_needed} pages)...")
+        if max_results is None:
+            pages_needed = max_pages
+        else:
+            pages_needed = min((max_results + page_size - 1) // page_size, max_pages)
+
+        print(f"    Fetching papers ({page_size} per page, up to {pages_needed} pages)...")
 
         for page in range(pages_needed):
-            remaining = max_results - len(all_papers)
-            if remaining <= 0:
-                break
+            if max_results is not None:
+                remaining = max_results - len(all_papers)
+                if remaining <= 0:
+                    break
+                current_page_size = min(page_size, remaining)
+            else:
+                current_page_size = page_size
 
-            current_page_size = min(page_size, remaining)
             print(f"    Page {page + 1}/{pages_needed}: fetching papers...")
 
             papers = self.search(
@@ -313,7 +318,7 @@ class ArxivClient:
         keywords: List[str],
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
-        max_results_per_keyword: int = 100,
+        max_results_per_keyword: Optional[int] = 100,
         page_size: int = 100,
     ) -> List[Dict]:
         """
@@ -323,7 +328,7 @@ class ArxivClient:
             keywords: List of arXiv keywords/categories
             start_date: Start date in YYYY-MM-DD format
             end_date: End date in YYYY-MM-DD format
-            max_results_per_keyword: Max results per keyword
+            max_results_per_keyword: Max results per keyword (None for unlimited)
             page_size: Results per page for pagination
 
         Returns:
