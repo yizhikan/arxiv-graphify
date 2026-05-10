@@ -99,7 +99,23 @@ python -m arxiv_graphify build
   - 社区结构（communities）
   - 意外连接（surprising connections）
 
-### 4. 状态查询命令 (`status`)
+### 4. 可视化命令 (`visualize`)
+
+```bash
+python -m arxiv_graphify visualize
+```
+
+- 从 `graphify-out/graph.json` 生成交互式 HTML 可视化
+- 输出文件：`graphify-out/graph.html`
+- **独立运行**：生成的 HTML 文件内嵌了所有依赖库，无需联网即可在浏览器中打开
+- 支持：
+  - 节点拖拽和缩放
+  - 按社区着色
+  - 点击节点查看详细信息
+  - 搜索和过滤功能
+  - 社区图例显示
+
+### 5. 状态查询命令 (`status`)
 
 ```bash
 python -m arxiv_graphify status
@@ -160,13 +176,23 @@ python -m arxiv_graphify init --keyword "graph neural network"
 python -m arxiv_graphify build
 ```
 
-### 4. 查看报告
+### 4. 生成可视化界面
+
+```bash
+python -m arxiv_graphify visualize
+```
+
+打开浏览器访问 `graphify-out/graph.html` 查看交互式知识图谱。
+
+**注意**：生成的 HTML 文件是完全独立的（约 700KB），无需联网即可在浏览器中打开。
+
+### 5. 查看报告
 
 ```bash
 cat graphify-out/GRAPH_REPORT.md
 ```
 
-### 5. 定期更新
+### 6. 定期更新
 
 ```bash
 python -m arxiv_graphify update
@@ -182,6 +208,7 @@ python -m arxiv_graphify build
 | `init` | 初始化新项目 | `--keyword` |
 | `update` | 增量更新论文 | 无 |
 | `build` | 构建知识图谱 | 无 |
+| `visualize` | 生成 HTML 可视化 | 无 |
 | `status` | 显示项目状态 | 无 |
 
 ### 全局选项
